@@ -1,0 +1,45 @@
+version: '3.7'
+
+services:
+  minio:
+    image: minio/minio
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+    command: server --console-address ":9001" /data
+
+  spark-master:
+    build: .
+    environment:
+      - SERVICE=master
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+
+  spark-worker:
+    build: .
+    environment:
+      - SERVICE=worker
+      - SPARK_MASTER=spark://spark-master:7077
+    depends_on:
+      - spark-master
+
+  jupyter-notebook:
+    build: .
+    environment:
+      - SERVICE=jupyter
+      - PYSPARK_DRIVER_PYTHON=jupyter
+      - SPARK_MASTER=spark://spark-master:7077
+      - PYSPARK_DRIVER_PYTHON_OPTS=lab --allow-root --ip=0.0.0.0 --notebook-dir=/home/jovyan/work
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebooks:/home/jovyan/work
+
+volumes:
+  minio_data:
