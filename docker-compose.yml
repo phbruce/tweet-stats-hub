@@ -1,0 +1,72 @@
+version: '3.7'
+
+services:
+  minio:
+    image: minio/minio
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+    command: server --console-address ":9001" /data
+
+  spark-master:
+    build:
+      context: .
+      dockerfile: Dockerfile.spark
+    environment:
+      - SERVICE=master
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    depends_on:
+      - ganglia
+
+  spark-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.spark
+    environment:
+      - SERVICE=worker
+      - SPARK_MASTER=spark://spark-master:7077
+    depends_on:
+      - spark-master
+      - ganglia
+
+  jupyter-notebook:
+    build:
+      context: .
+      dockerfile: Dockerfile.spark
+    environment:
+      - SERVICE=jupyter
+      - PYSPARK_DRIVER_PYTHON=jupyter
+      - SPARK_MASTER=spark://spark-master:7077
+      - PYSPARK_DRIVER_PYTHON_OPTS=lab --allow-root --ip=0.0.0.0 --notebook-dir=/home/jovyan/work
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./src:/home/jovyan/work
+
+  minio-setup:
+    build:
+      context: .
+      dockerfile: Dockerfile.minio
+    depends_on:
+      - minio
+
+  ganglia:
+    build:
+      context: .
+      dockerfile: Dockerfile.ganglia
+    tty: true
+    volumes:
+      - ganglia_data:/var/lib/ganglia/rrds
+    ports:
+      - "8099:80"
+
+volumes:
+  minio_data:
+  ganglia_data:

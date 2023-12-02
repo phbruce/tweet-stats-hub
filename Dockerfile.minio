@@ -1,0 +1,20 @@
+FROM alpine:latest as download-stage
+
+RUN apk add --no-cache curl unzip
+
+WORKDIR /data
+
+ARG FILE_URL="https://twitterdataanalysis-temp.s3.amazonaws.com/tweets.json.zip"
+
+RUN curl -L -o file.zip "${FILE_URL}" && \
+    unzip file.zip -d /unzipped
+
+FROM minio/mc
+
+COPY --from=download-stage /unzipped /unzipped
+
+COPY scripts/minio-setup.sh /minio-setup.sh
+
+RUN chmod +x /minio-setup.sh
+
+ENTRYPOINT ["/minio-setup.sh"]

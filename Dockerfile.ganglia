@@ -1,0 +1,23 @@
+FROM openjdk:11-jdk-slim
+
+ENV TZ=UTC
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt update && apt install -y ganglia-webfrontend ganglia-monitor rrdtool gmetad apache2 net-tools telnet \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN cp /etc/ganglia-webfrontend/apache.conf /etc/apache2/sites-enabled/ganglia.conf
+
+COPY config/gmetad.conf /etc/gmetad.conf
+COPY config/gmond.conf /etc/gmond.conf
+
+COPY scripts/start-ganglia.sh /start-ganglia.sh
+RUN chmod +x /start-ganglia.sh
+
+RUN chown -R nobody:root /var/lib/ganglia
+RUN chmod 0755 /var/lib/ganglia/rrds
+
+EXPOSE 80
+
+ENTRYPOINT ["/start-ganglia.sh"]
