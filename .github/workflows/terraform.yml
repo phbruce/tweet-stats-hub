@@ -1,0 +1,62 @@
+name: 'Terraform'
+
+on:
+  push:
+    branches: [ 'develop' ]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  terraform:
+    name: 'Terraform Deployment'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    environment:
+      name: dev
+
+    env:
+      AWS_REGION: us-east-1
+      ENV_DIR: dev
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+
+    # Terraform Bootstrap
+    - name: Terraform Bootstrap - Format Check and Apply
+      run: |
+        make fmt-check TERRAFORM_MODULE=bootstrap
+        make init TERRAFORM_MODULE=bootstrap ENV_DIR=${{ env.ENV_DIR }}
+        make plan TERRAFORM_MODULE=bootstrap ENV_DIR=${{ env.ENV_DIR }}
+        make apply TERRAFORM_MODULE=bootstrap ENV_DIR=${{ env.ENV_DIR }}
+
+    # Terraform Data Lake
+    - name: Terraform Data Lake - Format Check and Apply
+      run: |
+        make fmt-check TERRAFORM_MODULE=datalake
+        make init TERRAFORM_MODULE=datalake ENV_DIR=${{ env.ENV_DIR }}
+        make plan TERRAFORM_MODULE=datalake ENV_DIR=${{ env.ENV_DIR }}
+        make apply TERRAFORM_MODULE=datalake ENV_DIR=${{ env.ENV_DIR }}
+
+    # Terraform MPP
+    - name: Terraform MPP - Format Check and Apply
+      run: |
+        make fmt-check TERRAFORM_MODULE=mpp
+        make init TERRAFORM_MODULE=mpp ENV_DIR=${{ env.ENV_DIR }}
+        make plan TERRAFORM_MODULE=mpp ENV_DIR=${{ env.ENV_DIR }}
+        make apply TERRAFORM_MODULE=mpp ENV_DIR=${{ env.ENV_DIR }}

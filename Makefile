@@ -24,5 +24,5 @@ destroy:
 	terraform destroy -auto-approve -var-file=$(ENV_DIR)/variables.tfvars
 
 cls:
-	cd $(TERRAFORM_MODULE) && \
+	cd terraform/$(TERRAFORM_MODULE) && \
 	rm -rf .terraform terraform.tfstate.d/ .terraform.lock.hcl terraform.tfstate terraform.tfstate.backup
