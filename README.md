@@ -83,12 +83,10 @@ Our `docker-compose.yml` orchestrates a multi-container setup, integrating compo
 
 ## Operational Guide
 
-Post-setup, users can access the Jupyter Notebook interface and execute predefined analysis scripts. Detailed instructions are provided within the Docker container logs.
+Post-setup, users can access the Jupyter Notebook interface and execute predefined analysis scripts. Detailed instructions are provided within the Docker container logs. The file `src/twitter-data-analysis.ipynb` contains the analysis scripts.
 
-### System Performance and Requirements
-- To ensure the smooth operation of the project, it is recommended to allocate a minimum of 16GB of memory to Docker. This is essential for handling the complex data processing tasks efficiently in the local development environment.
-
-Including this detail helps in setting clear expectations and prerequisites for users who wish to replicate or contribute to your project.
+> System Performance and Requirements
+> To ensure the smooth operation of the project, it is recommended to allocate a minimum of 16GB of memory to Docker. This is essential for handling the complex data processing tasks efficiently in the local development environment.
 
 ### Monitoring with Ganglia in Development Environment
 
@@ -110,9 +108,28 @@ Including this detail helps in setting clear expectations and prerequisites for 
 - **Cloud Integration**: Support for AWS via Terraform.
 - **Analytical Tools**: Custom Python functions for targeted data insights.
 
+## Deployment
+
+For cloud environment, we recommend deploying the project on AWS. This can be achieved through the Terraform configurations in the `terraform` folder. The project is divided into three main folders, each with a specific purpose: `bootstrap`, `datalake`, and `mpp`. Detailed instructions are provided in the respective README files.
+
 ## Comprehensive Documentation
 
 Each module and function within the project is comprehensively documented within the Jupyter Notebook file located in `src/twitter-data-analysis`. This detailed documentation provides clarity and guidance for users and developers alike, ensuring a thorough understanding of the project's functionality and structure.
+
+## Next Steps
+
+Considering the simplicity of the current dataset, we propose the following enhancements to the project:
+
+- **Improve SDLC**: Enhance the SDLC by using Pull Requests and Code Reviews to ensure code quality and consistency.
+- **Integration Testing**: Implement integration testing to ensure the smooth operation of the project.
+
+But if we think about the project's scalability, we can consider the following:
+
+- **Data Ingestion and Processing**: Explore alternative data ingestion and processing strategies, such as the use of Apache Kafka.
+- **Orchestration**: Investigate the use of Apache Airflow for orchestrating data processing pipelines.
+- **Delta streaming**: Explore the use of Delta streaming for efficient data management.
+- **Governance**: Implement data governance strategies to ensure data quality and consistency.
+- **Security**: Explore security strategies to ensure data privacy and integrity.
 
 ## Collaborative Development
 
