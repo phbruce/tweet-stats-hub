@@ -1,12 +1,15 @@
 FROM openjdk:11-jdk-slim
 
+ENV TZ=UTC
+ENV DEBIAN_FRONTEND=noninteractive
+
 ENV SPARK_VERSION=3.3.3
 ENV SPARK_HOME=/opt/spark
 ENV HADOOP_VERSION=3
 ENV HADOOP_HOME=/opt/hadoop
 ENV PATH=$PATH:$SPARK_HOME/bin:$HADOOP_HOME/bin
 
-RUN apt-get update && apt-get install -y python3 python3-pip wget
+RUN apt-get update && apt-get install -y python3 python3-pip wget ganglia-monitor procps net-tools telnet
 RUN python3 -m pip install --upgrade pip
 RUN pip install jupyterlab
 
@@ -18,12 +21,17 @@ RUN wget https://downloads.apache.org/spark/spark-$SPARK_VERSION/spark-$SPARK_VE
     && mv spark-$SPARK_VERSION-bin-hadoop$HADOOP_VERSION $SPARK_HOME \
     && rm spark-$SPARK_VERSION-bin-hadoop$HADOOP_VERSION.tgz
 
+RUN wget https://repo1.maven.org/maven2/org/acplt/oncrpc/1.0.7/oncrpc-1.0.7.jar -P $SPARK_HOME/jars/
 RUN wget https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.2/hadoop-aws-3.3.2.jar -P $SPARK_HOME/jars/
+RUN wget https://repo1.maven.org/maven2/info/ganglia/gmetric4j/gmetric4j/1.0.10/gmetric4j-1.0.10.jar -P $SPARK_HOME/jars/
 RUN wget https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.597/aws-java-sdk-bundle-1.12.597.jar -P $SPARK_HOME/jars/
+RUN wget https://repo1.maven.org/maven2/org/apache/spark/spark-ganglia-lgpl_2.12/3.3.3/spark-ganglia-lgpl_2.12-3.3.3.jar -P $SPARK_HOME/jars/
 
 EXPOSE 4040 8080 7077 8888
 
 COPY scripts/start-spark.sh /start-spark.sh
 RUN chmod +x /start-spark.sh
+
+COPY config/gmond.conf /etc/gmond.conf
 
 CMD ["/start-spark.sh"]

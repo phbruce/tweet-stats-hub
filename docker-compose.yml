@@ -14,23 +14,32 @@ services:
     command: server --console-address ":9001" /data
 
   spark-master:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.spark
     environment:
       - SERVICE=master
     ports:
       - "8080:8080"
       - "7077:7077"
+    depends_on:
+      - ganglia
 
   spark-worker:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.spark
     environment:
       - SERVICE=worker
       - SPARK_MASTER=spark://spark-master:7077
     depends_on:
       - spark-master
+      - ganglia
 
   jupyter-notebook:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.spark
     environment:
       - SERVICE=jupyter
       - PYSPARK_DRIVER_PYTHON=jupyter
@@ -39,7 +48,35 @@ services:
     ports:
       - "8888:8888"
     volumes:
-      - ./notebooks:/home/jovyan/work
+      - ./src:/home/jovyan/work
+
+  minio-setup:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      echo 'Waiting for MinIO...';
+      until mc alias set myminio http://minio:9000 minio minio123; do
+        echo 'Waiting for MinIO to start...';
+        sleep 1;
+      done;
+      echo 'MinIO started';
+      mc mb myminio/raw || true;
+      mc mb myminio/staged || true;
+      echo 'Buckets created';
+      "
+
+  ganglia:
+    build:
+      context: .
+      dockerfile: Dockerfile.ganglia
+    tty: true
+    volumes:
+      - ganglia_data:/var/lib/ganglia/rrds
+    ports:
+      - "8099:80"
 
 volumes:
   minio_data:
+  ganglia_data:
