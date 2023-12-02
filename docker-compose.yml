@@ -51,21 +51,11 @@ services:
       - ./src:/home/jovyan/work
 
   minio-setup:
-    image: minio/mc
+    build:
+      context: .
+      dockerfile: Dockerfile.minio
     depends_on:
       - minio
-    entrypoint: >
-      /bin/sh -c "
-      echo 'Waiting for MinIO...';
-      until mc alias set myminio http://minio:9000 minio minio123; do
-        echo 'Waiting for MinIO to start...';
-        sleep 1;
-      done;
-      echo 'MinIO started';
-      mc mb myminio/raw || true;
-      mc mb myminio/staged || true;
-      echo 'Buckets created';
-      "
 
   ganglia:
     build:
