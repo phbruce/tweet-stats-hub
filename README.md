@@ -78,7 +78,7 @@ Our `docker-compose.yml` orchestrates a multi-container setup, integrating compo
 2. Navigate to the project's root directory.
 3. Initiate the Docker Compose setup:
    ```sh
-   docker-compose up -d
+   docker-compose up
    ```
 
 ## Operational Guide
